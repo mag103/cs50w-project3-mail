@@ -15,6 +15,7 @@ function compose_email() {
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
+  document.querySelector('#single-email-view').style.display = 'none';
 
   // Clear out composition fields
   document.querySelector('#compose-recipients').value = '';
@@ -49,6 +50,7 @@ function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
+  document.querySelector('#single-email-view').style.display = 'none';
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
@@ -64,26 +66,111 @@ function load_mailbox(mailbox) {
     for (const email of emails) {
       console.log(email);
 
+      // Create element
       const element = document.createElement('div');
-      element.className = "card";
+
+      // If element is read, set additional class "read" that have gray color in .css
+      if (email['read'] == true) {
+        element.className = "card read";
+      }
+      else {
+        element.className = "card";
+      }
+
+      // Set element's body to display email info and content
       element.innerHTML = `<div class="container card-body">` +
         `<div class="row"><div class="col-sm">${email.sender}</div>` +
         `<div class="col-sm">${email.subject}</div>` +
-        `<div class="col-sm">${email.timestamp}</div></div></div>`
+        `<div class="col-sm">${email.timestamp}</div>` +
+        `</div></div>`;
       
       element.addEventListener('click', function() {
-        console.log('This element has been clicked!')
+        console.log('This element has been clicked!');
+        console.log(mailbox);
+        single_email(email, mailbox);
+
       });
+
+      // Append emails list with the new element
       document.querySelector('#emails-view').append(element);
     }
+
   });
 
-  // function add_email(subject) {
-  //   const element = document.createElement('div');
-  //   element.innerHTML = subject;
-  //   // element.addEventListener('click', function() {
-  //   //   console.log('This element has been clicked!')
-  //   // });
-  //   document.querySelector('#emails-list').append(element);
-  // }
 }
+function single_email(singleEmail, mailbox) {
+  
+  // Show single email and hide other views
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'none';
+  document.querySelector('#single-email-view').style.display = 'block';
+
+  if (mailbox == 'archive') {
+    document.getElementById('archive-button').style.visibility = 'visible';
+    document.querySelector('#archive-button').innerHTML = 'Unarchive';
+  }
+  else if (mailbox == 'inbox') {
+    document.getElementById('archive-button').style.visibility = 'visible';
+    document.querySelector('#archive-button').innerHTML = 'Archive';
+  }
+  else if (mailbox == 'sent') {
+    document.getElementById('archive-button').style.visibility = 'hidden';
+  }
+
+  fetch(`/emails/${singleEmail['id']}`)
+  .then(response => response.json())
+  .then(email => {
+    // Print email
+    console.log(email);
+
+    // ... do something else with email ...
+    document.getElementById("email-from").innerHTML = email.sender;
+    document.getElementById("email-to").innerHTML = email.recipients;
+    document.getElementById("email-subject").innerHTML = email.subject;
+    document.getElementById("email-timestamp").innerHTML = email.timestamp;
+    document.getElementById("email-body").innerHTML = email.body;
+
+    if (singleEmail['read'] == false) {
+      read_email(singleEmail['id']);
+    }
+
+    document.querySelector('#archive-button').addEventListener('click', () => {
+      archive(email['id'], mailbox); 
+      load_mailbox('inbox');
+      return;
+    });
+
+  });
+}
+
+function read_email(id) {
+
+    fetch(`/emails/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+          read: true
+      })
+    });
+}
+
+function archive(id, mailbox){
+
+  if (mailbox == 'inbox') {
+    fetch(`/emails/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+          archived: true
+      })
+    });
+  }
+  else {
+    fetch(`/emails/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+          archived: false
+      })
+    });
+  }
+  
+}
+

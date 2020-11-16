@@ -15,4 +15,5 @@ This website was created for the purpose of Project 3 of Harvard's course CS50's
 
 ### Functionalities
 
-Youtube video demonstrate project’s functionality
+Youtube video demonstrate project’s functionality:
+https://youtu.be/zPnUcexg_ZY 

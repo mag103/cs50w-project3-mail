@@ -2,7 +2,6 @@ textarea {
     min-height: 400px;
 }
 
-
 .card {
     margin-bottom: 10px;
 }
@@ -11,4 +10,15 @@ textarea {
     background-color: lightgray;
 }
 
+.buttons {
+    margin-top: 10px;
+}
 
+#send-button {
+    margin-top: 15px;
+}
+
+.mail-date {
+    text-align: right;
+    color: gray;
+}
